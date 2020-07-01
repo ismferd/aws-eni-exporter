@@ -6,9 +6,6 @@ import (
 	"log"
 	"net/http"
 
-	//"strings"
-
-
 	"github.com/aws/aws-sdk-go-v2/aws/external"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go/aws"
@@ -16,28 +13,6 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 )
-
-
-type eni struct {
-	name string
-	ipsAvailable int
-}
-
-// AWSConfig store configuration used to initialize
-// AWS ec2 client.
-type AWSConfig struct {
-	cfg aws.Config
-	vpc string
-}
-
-// Client represents an AWS SSM client
-// maps to ProviderServices
-type Client struct {
-	config *AWSConfig
-	api    ec2.Client
-}
-
-
 
 func newAWSClient(config *AWSConfig) *Client {
 	c := &Client{
@@ -82,14 +57,12 @@ func (c *Client) GetSubnets() ([]eni, error){
 		}
 		
 	}
-
 	return a, err
 }
 
 func CreateMetrics(eni []eni)  {
 	go func() {
 		for _,v := range(eni){
-
 		foo := newEniCollector(v)
 		prometheus.MustRegister(foo)
 		}
@@ -102,7 +75,7 @@ func AWSconfiguration() []eni{
 	
 	configuration := AWSConfig{
 		cfg: awsConfiguration,
-		vpc: "vpc-******",
+		vpc: "",
 	}
 	cli := newAWSClient(&configuration)
 	eni, err := cli.GetSubnets()
@@ -113,13 +86,8 @@ func AWSconfiguration() []eni{
 }
 
 func main(){ 
-	
 	eni := AWSconfiguration()
 	CreateMetrics(eni)
-	
-	fmt.Println("HERE")
 	http.Handle("/metrics", promhttp.Handler())
 	log.Fatal(http.ListenAndServe(":8080", nil))
-
 }
-

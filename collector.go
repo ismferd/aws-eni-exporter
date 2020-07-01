@@ -1,10 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"strings"
-	//"github.com/aws/aws-sdk-go/aws"
-//	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -45,28 +42,10 @@ func (collector *eniCollector) Describe(ch chan<- *prometheus.Desc) {
 func (collector *eniCollector) Collect(ch chan<- prometheus.Metric) {
 	eni := AWSconfiguration()
 	value := 0
-	//CreateMetrics(eni)
 	for _,v := range(eni){
 		if v.name == collector.eni.name{
-			println("WOLOLO")
 			value = v.ipsAvailable
-			fmt.Println(v.name)
-			fmt.Println(collector.eni.name)
-			fmt.Println(value)
 		}
 	}
-
-	//println(value)
-	//Implement logic here to determine proper metric value to return to prometheus
-	//for each descriptor or call other functions that do so.
-	/*var metricValue float64
-	if 1 == 1 {
-		metricValue = 1
-	}
-	*/
-	//Write latest value for each metric in the prometheus metric channel.
-	//Note that you can pass CounterValue, GaugeValue, or UntypedValue types here.
 	ch <- prometheus.MustNewConstMetric(collector.gauge, prometheus.GaugeValue, float64(value))
-
-
 }
