@@ -2,6 +2,24 @@
 
 Prometheus exporter to get how many ip availables are in each subnet in the vpc selected.
 
+exposing at :8888
+
+You will see in prometheus something like:
+```
+# HELP qa_private_us_east_1a Shows the currect value of ip availables for each subnet
+# TYPE qa_private_us_east_1a gauge
+qa_private_us_east_1a 16140
+# HELP qa_private_us_east_1b Shows the currect value of ip availables for each subnet
+# TYPE qa_private_us_east_1b gauge
+qa_private_us_east_1b 16242
+# HELP qa_public_us_east_1a Shows the currect value of ip availables for each subnet
+# TYPE qa_public_us_east_1a gauge
+qa_public_us_east_1a 16344
+# HELP qa_public_us_east_1b Shows the currect value of ip availables for each subnet
+# TYPE qa_public_us_east_1b gauge
+qa_public_us_east_1b 16344
+```
+
 ## install 
 
 As docker:
