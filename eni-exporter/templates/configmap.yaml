@@ -1,0 +1,9 @@
+kind: ConfigMap 
+apiVersion: v1 
+metadata:
+  name: aws-config 
+data:
+  # Configuration values can be set as key-value properties
+  region: {{ .Values.configmap.region }}
+  vpc: {{ .Values.configmap.vpcId }}
+  port: "{{ .Values.configmap.port }}"

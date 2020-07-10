@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "eni_exporter.fullname" . }}
+  namespace: {{.Release.Namespace }}
+  labels:
+{{ include "eni_exporter.labels" . | indent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ include "eni_exporter.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "eni_exporter.fullname" . }}
+  # Change this to the namespace the Prometheus instance is running in
+  # namespace: default
+  namespace: monitoring
+  labels:
+{{ include "eni_exporter.labels" . | indent 4 }}
+spec:
+  namespaceSelector:
+    matchNames:
+    - exporters
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "eni_exporter.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  endpoints:
+  - port: metrics
+    interval: 15s

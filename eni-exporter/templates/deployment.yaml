@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "eni_exporter.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+{{ include "eni_exporter.labels" . | indent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "eni_exporter.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+{{- with .Values.podLabels }}
+      labels:
+{{ toYaml . | indent 8 }}
+{{- end }}
+        app.kubernetes.io/name: {{ include "eni_exporter.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+
+{{- with .Values.podAnnotations }}
+      annotations:
+{{ toYaml . | indent 8 }}
+{{- end }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      serviceAccountName: {{ template "eni_exporter.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env: 
+            - name: REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: aws-config
+                  key: region
+            - name: VPC
+              valueFrom:
+                configMapKeyRef:
+                  name: aws-config
+                  key: vpc
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: aws-config
+                  key: port
+          ports:
+            - name: http
+              containerPort: 8888
+              protocol: TCP
+          livenessProbe:
+            tcpSocket:
+              port: 8888
+              initialDelaySeconds: 5
+              periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: 8888
+              initialDelaySeconds: 5
+              periodSeconds: 10
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
